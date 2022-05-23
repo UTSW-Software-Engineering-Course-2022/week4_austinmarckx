@@ -183,15 +183,13 @@ int main(int argc, char* argv[])
         // print first 100bp
         std::cout << ref.Sequence.substr(0, 100) << std::endl;
         ref.SuffixArrayFromSequence();
-        std::vector<int> suffixArrayIndex = ref.GetSuffixArrayIndex();
+        std::cout << "Suffix array created..." << std::endl;
 
-        for (int i = 0; i < suffixArrayIndex.size(); i++) {
-            // Current suffex has index i+1, and is the substring from i to end.
-            std::cout << suffixArrayIndex[i] << std::endl;
-        }
-
-        
-        
+        // Save indexes to output file
+        std::cout << "Saving indexes..." << std::endl;
+        ref.SaveIndexesToFile(GetFilename(argv[2]));
+        std::cout << "Indexes Saved to "<< GetFilename(argv[2]) << std::endl;
+        std::cout << "Program completed." << std::endl;
     }
 
     return 0;
