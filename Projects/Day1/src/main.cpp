@@ -67,6 +67,22 @@ public:
 
     }
 
+    // Save to file
+    void SaveIndexesToFile(const std::string& OutFilename)
+    {
+        // Get indexes
+        std::vector<int> indexes = GetSuffixArrayIndex();
+        // initialize output file
+        std::ofstream outFile;
+        outFile.open(OutFilename);
+        for (int i = 0; i < indexes.size(); i++) {
+            // Current suffex has index i+1, and is the substring from i to end.
+            outFile << indexes[i] << std::endl;
+        }
+        // close file
+        outFile.close();
+    }
+
     // Get and Set sequence length
     void SetSequenceLength() {
         SequenceLength = Sequence.length();
@@ -78,6 +94,7 @@ public:
     void SetSuffixArray() {
         suffixArray = SuffixArrayFromSequence();
     }
+    // return vector of ints continain the suffix array indexes
     std::vector<int> GetSuffixArrayIndex() {
         std::vector<int> indexes;
         indexes.resize(suffixArray.size());
@@ -165,18 +182,15 @@ int main(int argc, char* argv[])
 
         // print first 100bp
         std::cout << ref.Sequence.substr(0, 100) << std::endl;
-        
-
-        std::cout << "SuffixArrayFromSequence Begin" << std::endl;
         ref.SuffixArrayFromSequence();
-        std::cout << "SuffixArrayFromSequence End" << std::endl;
-        
+        std::vector<int> suffixArrayIndex = ref.GetSuffixArrayIndex();
 
-        for (int i = 0; i < ref.suffixArray.size(); i++) {
+        for (int i = 0; i < suffixArrayIndex.size(); i++) {
             // Current suffex has index i+1, and is the substring from i to end.
-            std::cout << ref.suffixArray[i].index << " " << ref.suffixArray[i].suff << std::endl;
+            std::cout << suffixArrayIndex[i] << std::endl;
         }
 
+        
         
     }
 
