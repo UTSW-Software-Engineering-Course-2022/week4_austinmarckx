@@ -8,11 +8,11 @@
 #include <algorithm>
 
 // Struct to store suffixes
-struct suffix
-{
-    int index;
-    std::string suff;
-};
+//struct suffix
+//{
+//    int index;
+//    std::string suff;
+//};
 
 // TODO: support multiple chromosome
 class FReference 
@@ -70,14 +70,12 @@ public:
     // Save to file
     void SaveIndexesToFile(const std::string& OutFilename)
     {
-        // Get indexes
-        std::vector<int> indexes = GetSuffixArrayIndex();
         // initialize output file
         std::ofstream outFile;
         outFile.open(OutFilename);
-        for (int i = 0; i < indexes.size(); i++) {
+        for (int i = 0; i < suffixArray.size(); i++) {
             // Current suffex has index i+1, and is the substring from i to end.
-            outFile << indexes[i] << std::endl;
+            outFile << suffixArray[i] << std::endl;
         }
         // close file
         outFile.close();
@@ -95,36 +93,37 @@ public:
         suffixArray = SuffixArrayFromSequence();
     }
     // return vector of ints continain the suffix array indexes
-    std::vector<int> GetSuffixArrayIndex() {
-        std::vector<int> indexes;
-        indexes.resize(suffixArray.size());
-        for (int i = 0; i < suffixArray.size(); i++) {
-            indexes[i] = suffixArray[i].index;
-        }
-        return indexes;
-    }
+    //std::vector<int> GetSuffixArrayIndex() {
+    //    std::vector<int> indexes;
+    //    indexes.resize(suffixArray.size());
+    //    for (int i = 0; i < suffixArray.size(); i++) {
+    //        indexes[i] = suffixArray[i].index;
+    //    }
+    //    return indexes;
+    //}
 
     // Comparision for sort:
-    static int suffixComparision(suffix one, suffix two) {
-        return std::strcmp(one.suff.c_str(), two.suff.c_str()) < 0 ? 1 : 0;
-    }
+    //int suffixComparision(int indexOne, int indexTwo) {
+    //    char* str1 = Sequence.substr(indexOne).c_str();
+    //    char* str2 = Sequence.substr(indexTwo).c_str();
+    //    return std::strcmp(str1, str2) < 0 ? 1 : 0;
+    //}
 
     /* Create Suffix Array from Sequence
     
     */
-    std::vector<suffix> SuffixArrayFromSequence()
-    {   
+    std::vector<int> SuffixArrayFromSequence()
+    {
         // Allocate for suffix array
         suffixArray.resize(SequenceLength);
 
         // Fill Suffix array
         for (int i = 0; i < SequenceLength; i++) {
-            // Current suffex has index i+1, and is the substring from i to end.
-            suffixArray[i].index = i;
-            suffixArray[i].suff = Sequence.substr(i, SequenceLength);
+            suffixArray[i] = i;
         }
         // Sort
-        std::sort(suffixArray.begin(), suffixArray.end(), suffixComparision);
+        std::sort(suffixArray.begin(), suffixArray.end(), [&](int indexOne, int indexTwo) {
+            return std::strcmp(Sequence.substr(indexOne).c_str(), Sequence.substr(indexTwo).c_str()) < 0 ? 1 : 0; });
 
         // Return
         return suffixArray;
@@ -133,7 +132,7 @@ public:
 public:
     std::string Sequence;
     size_t SequenceLength;
-    std::vector<suffix> suffixArray;
+    std::vector<int> suffixArray;
 };
 
 
