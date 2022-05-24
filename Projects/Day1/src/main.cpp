@@ -5,7 +5,14 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
+// Struct to store suffixes
+//struct suffix
+//{
+//    int index;
+//    std::string suff;
+//};
 
 // TODO: support multiple chromosome
 class FReference 
@@ -17,6 +24,7 @@ public:
     // Constructor with fasta filename
     FReference(const std::string& InFilename) {
         LoadFromFasta(InFilename);
+        SetSequenceLength();
     }
 
     void LoadFromString(const std::string& InSequence)
@@ -56,11 +64,75 @@ public:
 
         // append '$' as End of Sequence mark
         Sequence.append("$");
+
+    }
+
+    // Save to file
+    void SaveIndexesToFile(const std::string& OutFilename)
+    {
+        // initialize output file
+        std::ofstream outFile;
+        outFile.open(OutFilename);
+        for (int i = 0; i < suffixArray.size(); i++) {
+            // Current suffex has index i+1, and is the substring from i to end.
+            outFile << suffixArray[i] << std::endl;
+        }
+        // close file
+        outFile.close();
+    }
+
+    // Get and Set sequence length
+    void SetSequenceLength() {
+        SequenceLength = Sequence.length();
+    }
+    size_t GetSequenceLength() const {
+        return SequenceLength;
+    } 
+    // Set suffix array
+    void SetSuffixArray() {
+        suffixArray = SuffixArrayFromSequence();
+    }
+    // return vector of ints continain the suffix array indexes
+    //std::vector<int> GetSuffixArrayIndex() {
+    //    std::vector<int> indexes;
+    //    indexes.resize(suffixArray.size());
+    //    for (int i = 0; i < suffixArray.size(); i++) {
+    //        indexes[i] = suffixArray[i].index;
+    //    }
+    //    return indexes;
+    //}
+
+    // Comparision for sort:
+    //int suffixComparision(int indexOne, int indexTwo) {
+    //    char* str1 = Sequence.substr(indexOne).c_str();
+    //    char* str2 = Sequence.substr(indexTwo).c_str();
+    //    return std::strcmp(str1, str2) < 0 ? 1 : 0;
+    //}
+
+    /* Create Suffix Array from Sequence
+    
+    */
+    std::vector<int> SuffixArrayFromSequence()
+    {
+        // Allocate for suffix array
+        suffixArray.resize(SequenceLength);
+
+        // Fill Suffix array
+        for (int i = 0; i < SequenceLength; i++) {
+            suffixArray[i] = i;
+        }
+        // Sort
+        std::sort(suffixArray.begin(), suffixArray.end(), [&](int indexOne, int indexTwo) {
+            return std::strcmp(Sequence.substr(indexOne).c_str(), Sequence.substr(indexTwo).c_str()) < 0 ? 1 : 0; });
+
+        // Return
+        return suffixArray;
     }
 
 public:
     std::string Sequence;
-
+    size_t SequenceLength;
+    std::vector<int> suffixArray;
 };
 
 
@@ -95,31 +167,28 @@ void PrintUsage(const std::string& InProgramName)
  */
 int main(int argc, char* argv[])
 {
+
     // sa InReferenceFastaFile OutSuffixArrayFile
     if (argc < 3) {
         PrintUsage(GetFilename(argv[0]));
         return 1;
     }
 
-
-    // Load reference from fasta file
     {
-        FReference ref(argv[1]); // load fasta file
+        FReference ref(argv[1]);
 
         std::cout << "Reference sequence length: " << ref.Sequence.length() << std::endl;
+
         // print first 100bp
         std::cout << ref.Sequence.substr(0, 100) << std::endl;
-    }
+        ref.SuffixArrayFromSequence();
+        std::cout << "Suffix array created..." << std::endl;
 
-    // Load reference from string
-    {
-        FReference ref2;
-        ref2.LoadFromString("AACCGTA");
-
-        std::cout << "Reference2 sequence length: " << ref2.Sequence.length() << std::endl;
-
-        // print first 100bp
-        std::cout << ref2.Sequence.substr(0, 100) << std::endl;
+        // Save indexes to output file
+        std::cout << "Saving indexes..." << std::endl;
+        ref.SaveIndexesToFile(GetFilename(argv[2]));
+        std::cout << "Indexes Saved to "<< GetFilename(argv[2]) << std::endl;
+        std::cout << "Program completed." << std::endl;
     }
 
     return 0;
