@@ -368,9 +368,9 @@ int main(int argc, char* argv[])
         std::vector<alignment> alignments;
          
         // All queries
-        //for (int i = 0; i < query.Sequence.size(); i++) {
+        for (int i = 0; i < query.Sequence.size(); i++) {
         // 1st 1000 queries
-        for (int i = 0; i < 300; i++) {
+        //for (int i = 0; i <1000; i++) {
             // Calc Time step per loop: start
             std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
