@@ -1,0 +1,3 @@
+D:/repos/week4_austinmarckx/Projects/Day2/out/build/x64-Debug/CMakeFiles/salign.dir
+D:/repos/week4_austinmarckx/Projects/Day2/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+D:/repos/week4_austinmarckx/Projects/Day2/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

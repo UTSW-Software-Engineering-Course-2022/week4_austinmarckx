@@ -1,0 +1,5 @@
+﻿  main.cpp
+D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(252,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(253,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(255,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Day2.vcxproj -> D:\repos\week4_austinmarckx\Projects\Day2\x64\Debug\salign.exe

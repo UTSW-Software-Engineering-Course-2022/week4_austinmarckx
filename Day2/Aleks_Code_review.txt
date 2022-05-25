@@ -1,0 +1,15 @@
+Organization/OOP: 
+Code is logically organized. New material is not particularly implemented in an OOP design, but understandable first for a first pass.
+
+Methodology: Suffix sorting -
+The method used in Alek's code sorts the suffix array by rank comparisons rather than by string comparisons. Moreover, by beginning with short suffix lengths and doubling the length over each iteration, it drastically reduces the run time.  
+
+Comments/Docstrings:
+Generally, the code is well commented.  Docstrings are not yet implemented, but due to time limitations that's understandable.
+
+Other:
+In my opinion variable names could be a bit more informative.  For example “n” and “len” are both lengths of strings.  For clarity, I would recommend something like “totalLength” and “seedLength” just for clear differentiation.
+
+Summary:
+Overall, very well done.  The code is able to handle the chr22 task in reasonable runtime and with reasonable memory usage.  Good job.
+
