@@ -10,7 +10,9 @@
 #include <chrono>
 #include <ctime>
 #include <cstdlib>
-#include <execution>
+#include <execution>]
+#include <set>
+#include <iterator>
 
  // TODO: support multiple chromosome
 class FReference
@@ -279,11 +281,11 @@ std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query,
     std::vector<int> suffArrayCpy = ref.suffixArray[refSeqIndex];
     std::string querySeqCpy = query.Sequence[querySeqIndex].substr(0, queryLength);
 
-    std::cout << "querySeqCpy: " << querySeqCpy << std::endl;
+    //std::cout << "querySeqCpy: " << querySeqCpy << std::endl;
 
     // output
     std::vector<alignment> matches = {};
-    std::string tmp;
+    int tmp;
 
     // Try and use seed of query to increase comparison speed
     int seedSize = 1;
@@ -292,11 +294,11 @@ std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query,
     // Binary search
     while (left != right) {
         // get string at midpoint of suffix array
-        tmp = ref.Sequence[refSeqIndex].substr(suffArrayCpy[mid], seedSize);
-        std::cout << "tmp: " << tmp << "  mid: " << mid << "  r: " << right << "  l: " << left << std::endl;
+        tmp = strncmp( ref.Sequence[refSeqIndex].c_str() + suffArrayCpy[mid], query.Sequence[querySeqIndex].c_str(), seedSize );
+        //std::cout << "tmp: " << tmp << "  mid: " << mid << "  r: " << right << "  l: " << left << std::endl;
 
         // Too low, move left pointer
-        if (tmp < querySeqSubStr) {
+        if (tmp < 0) {
             if (left == mid) {
                 left++;
             }
@@ -305,7 +307,7 @@ std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query,
             }
 
         }// Too high, move right pointer 
-        else if (tmp > querySeqSubStr) {
+        else if (tmp > 0) {
             if (right == mid) {
                 right--;
             }
@@ -381,11 +383,27 @@ BWTArray BWTFromSuffixArray(FReference seq, int seqIndex) {
 void CalculateBWTRank(BWTArray &bwt) {
     // Calculate rank
     bwt.rank.resize(bwt.last.length());
-    char matches[5] = { '$','A','C','G','T'};
-    std::vector<int> counts(5);
-    std::vector<int> totalCounts(5);
-    std::vector<int> rankIndex(5);
 
+    // Determine number of unique characters
+    std::set<char> uniqueChars;
+    for (int i = 0; i < bwt.last.length(); i++) {
+        uniqueChars.insert(bwt.last[i]);
+    }
+    
+    // Initialize counters
+    std::vector<int> counts(uniqueChars.size());
+    std::vector<int> totalCounts(uniqueChars.size());
+    std::vector<int> rankIndex(uniqueChars.size());
+
+    // Get total counts for each unique char
+    int pos = 0;
+    for (std::set<char>::iterator i = uniqueChars.begin(); i != uniqueChars.end(); i++) {
+        totalCounts[pos] = std::count(bwt.last.begin(), bwt.last.end(), *i);
+        pos++;
+    }
+
+
+    // This is bad form to hard code everything.  TODO: Fix it
     // Count and store
     bwt.A = std::count(bwt.last.begin(), bwt.last.end(), 'A');
     bwt.C = std::count(bwt.last.begin(), bwt.last.end(), 'C');
@@ -413,35 +431,29 @@ void CalculateBWTRank(BWTArray &bwt) {
                 bwt.rank[i] = rankIndex[j] + counts[j];
                 break;
             }
-        //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl;
+        //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl; // Debug
     }
 }
 
 std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
     // Calculate rank
-
     std::cout << "Calculating Rank for BWT..." << std::endl;
     CalculateBWTRank(bwt);
     std::cout << "Rank for BWT Calculated." << std::endl;
     
     // create output string 
     std::string output = "";
+    output.reserve(bwt.last.length());
     int r = 0;
-    char c = bwt.last[r];
 
-    while (c != '$') {
-        //std::cout << "r: " << r << " c: " << c << std::endl;
-        output += c;
-        //std::cout << "rank " << bwt.rank[r] << " next c: " << bwt.last[r] << std::endl;
-        //std::cout << "rank " << bwt.rank[58] << " next c: " << bwt.last[58] << std::endl;
-
+    std::cout << "Recovering Sequence from BWT..." << std::endl;
+    while (bwt.last[r] != '$') {
+        std::cout << "r: " << r << " c: " << bwt.last[r] << std::endl; // Debug
+        output.insert(0,1, bwt.last[r]);
         r = bwt.rank[r];
-        c = bwt.last[r];
     }
-    //std::cout << "Output generated... " << output << " " << output.length() << std::endl;
-    
-    // For some reason this generates the reverse of the input sequence... unreverse it.
-    std::reverse(output.begin(), output.end());
+
+    std::cout << "Sequence Recovered." << std::endl;
     return output += '$';
 }
 

@@ -4,11 +4,11 @@ D:\repos\week4_austinmarckx\Day4\src\main.cpp(274,65): warning C4267: 'initializ
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(275,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(277,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(368,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(390,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(391,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(392,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(393,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(400,52): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(394,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(395,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(402,52): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
           with
           [
               _Ty=int
