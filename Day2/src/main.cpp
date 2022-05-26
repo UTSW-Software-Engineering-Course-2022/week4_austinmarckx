@@ -285,7 +285,7 @@ std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query,
     std::string tmp;
 
     // Try and use seed of query to increase comparison speed
-    int seedSize = 8;
+    int seedSize = 1;
     std::string querySeqSubStr = querySeqCpy.substr(0, seedSize);
 
     // Binary search
