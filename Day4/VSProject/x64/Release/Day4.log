@@ -13,10 +13,10 @@ D:\repos\week4_austinmarckx\Day4\src\main.cpp(400,54): warning C4267: '=': conve
               _Ty=int
           ]
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(401,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(555,128): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(544,128): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  0 of 771 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  12 of 650 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    118 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Day4.vcxproj -> D:\repos\week4_austinmarckx\Day4\x64\Release\bwtalign.exe

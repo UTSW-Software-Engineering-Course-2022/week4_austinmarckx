@@ -109,7 +109,7 @@ public:
         return SequenceLength[seqIndex];
     }
     // Set suffix array
-    void SetSuffixArray(std::vector<int> inputSuffArray, int seqIndex) {
+    void SetSuffixArray(std::vector<int> &inputSuffArray, int seqIndex) {
 
         suffixArray[seqIndex] = inputSuffArray;
         std::cout << "Suffix Array Set" << std::endl;
@@ -179,7 +179,7 @@ bool suffixComparision(const suffix& Apples, const suffix& Oranges) {
 /* Create Suffix Array from Sequence
 
 */
-std::vector<int> SuffixArrayFromSequence(FReference refSeq, int refSeqIndex = 0)
+std::vector<int> SuffixArrayFromSequence(FReference &refSeq, int refSeqIndex = 0)
 {
     // Get length
     int strLen = (int)refSeq.Sequence[refSeqIndex].size();
@@ -376,7 +376,7 @@ BWTArray BWTFromSuffixArray(FReference &seq, int seqIndex) {
 
 void CalculateBWTRank(BWTArray &bwt) {
     // Calculate rank
-    bwt.rank.resize(bwt.last.length());
+    bwt.rank.reserve(bwt.last.length());
 
     // Determine number of unique characters
     std::set<char> uniqueChars;
@@ -410,7 +410,6 @@ void CalculateBWTRank(BWTArray &bwt) {
     for (int i = 0; i < bwt.last.length(); i++) {
         // find matching char, update counts and rank
         int pos = 0;
-        //counts[pos] = -1; // fix the $?
         for (std::set<char>::iterator j = uniqueChars.begin(); j != uniqueChars.end(); j++) {
             if (strncmp( bwt.last.substr(i, 1).c_str(), &*j, 1) == 0) {
                 counts[pos]++;
@@ -419,17 +418,7 @@ void CalculateBWTRank(BWTArray &bwt) {
             }
             pos++; // acts as j index
         }
-        //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl; // Debug
-        //std::cout << "$: " << rankIndex[0] << " A: " << rankIndex[1] << " C: " << rankIndex[2] << " G: " << rankIndex[3] << " T: " << rankIndex[4] << std::endl; // Debug
     }
-
-    // Ensure ranks are unique:
-    std::set<int> uniqueRanks;
-    for (int i = 0; i < bwt.last.length(); i++) {
-        uniqueRanks.insert(bwt.rank[i]);
-    }
-    std::cout << "Rank Size: " << uniqueRanks.size() << " Last Length: " << bwt.last.length() << std::endl;
-
 }
 
 std::string SequenceFromBWTAndSuffixArray(FReference &seq, int seqIndex, BWTArray &bwt) {
@@ -534,8 +523,8 @@ int main(int argc, char* argv[])
 
         // Print and time output 
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-        auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-        std::cout << "Sequence recovery time (us): " << durationFPextraction << std::endl;
+        auto durationFPextraction = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Sequence recovery time (ms): " << durationFPextraction << std::endl;
 
         // Load Queries
         std::cout << "Loading Queries..." << std::endl;
