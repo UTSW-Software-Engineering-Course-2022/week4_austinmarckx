@@ -1,0 +1,17 @@
+Austin Marckx
+Day 3: Code Review -- Suzette Day2 main.cpp
+-----------------------------
+
+Completeness/Code Approach:
+
+Pros:  Generally the variable names are informative and are clear as to what type of data they are intended to hold
+
+Cons:  A lot of commented code makes the main quite difficult to follow.  Moreover, most of the functionality of the code is hard coded in the main which makes it harder to reuse code in the future.
+
+Memory
+
+Memory requirements are going to O(n) for both the sequence and the query.  Technically as each query is loaded into memory before aligning, this will increase the memory demand.
+
+Time
+
+Unless I'm mistaken, this is going to be O(n*m)  because in worst case, each substring of the reference is going to be checked against the query substring.  I think this alignment implementation could be greatly sped up using binary search of the sorted suffix array
