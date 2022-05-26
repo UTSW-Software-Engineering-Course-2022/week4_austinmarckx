@@ -268,76 +268,77 @@ void PrintAlignmentsToTerminal(const std::vector<alignment> aln)
 
 // Midpoint for Binary search
 int GetMidpoint(int left, int right) {
-    return(int((left + right) / 2));
+    return(int(left + (right - left)/2) );
 }
 
 std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query, int querySeqIndex, int refSeqIndex = 0) {
+    //std::chrono::high_resolution_clock::time_point t5 = std::chrono::high_resolution_clock::now();
     // Setup
-    int queryLength = query.GetSequenceLength(querySeqIndex) - 1;
-    int refSeqLength = query.GetSequenceLength(refSeqIndex) - 1;
+    int queryLength = query.SequenceLength[querySeqIndex] - 1;
     int left = 0;
-    int right = ref.GetSequenceLength(refSeqIndex);
-    int mid = GetMidpoint(left, right);
-    std::vector<int> suffArrayCpy = ref.suffixArray[refSeqIndex];
-    std::string querySeqCpy = query.Sequence[querySeqIndex].substr(0, queryLength);
-
-    //std::cout << "querySeqCpy: " << querySeqCpy << std::endl;
+    int right = ref.SequenceLength[refSeqIndex] - 1;
+    int mid = left + (right - left) / 2;
+    //std::vector<int> suffArrayCpy = ref.suffixArray[refSeqIndex];
 
     // output
     std::vector<alignment> matches = {};
     int tmp;
 
-    // Try and use seed of query to increase comparison speed
-    int seedSize = 1;
-    std::string querySeqSubStr = querySeqCpy.substr(0, seedSize);
-    
     // Binary search
-    while (left != right) {
-        // get string at midpoint of suffix array
-        tmp = strncmp( ref.Sequence[refSeqIndex].c_str() + suffArrayCpy[mid], query.Sequence[querySeqIndex].c_str(), seedSize );
-        //std::cout << "tmp: " << tmp << "  mid: " << mid << "  r: " << right << "  l: " << left << std::endl;
+    while (left <= right) {        
+        //std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+
+        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), ref.Sequence[refSeqIndex].c_str() + ref.suffixArray[refSeqIndex][mid], queryLength);
+        //std::cout << "tmp: " << tmp << "  l: " << left << "  mid: " << mid << "  r: " << right<< std::endl;
 
         // Too low, move left pointer
-        if (tmp < 0) {
+        if (tmp > 0) {
             if (left == mid) {
                 left++;
             }
             else {
-                left = mid;
+                left = mid + 1;
             }
 
         }// Too high, move right pointer 
-        else if (tmp > 0) {
+        else if (tmp < 0) {
             if (right == mid) {
                 right--;
             }
             else {
-                right = mid;
+                right = mid - 1;
             }
         } // O/W match
         else {
-            // increase seed Size
-            if (seedSize != queryLength) {
-                seedSize *= 2;
-                // If seed size too big, set to query length
-                if (seedSize > queryLength) {
-                    seedSize = queryLength;
-                }
-                // update query substring
-                querySeqSubStr = querySeqCpy.substr(0, seedSize);
-            }
-            else { // if match on max seed size: add match
-                // Add the entry to output
-                matches.push_back(alignment(query.SequenceName[querySeqIndex], ref.SequenceName[refSeqIndex], suffArrayCpy[mid] + 1)); // 0->1 Index
-                // remove the match from suffixArray
-                suffArrayCpy.erase(suffArrayCpy.begin() + mid);
-            }
+            //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+
+            // Add the entry to output
+            matches.push_back(alignment(query.SequenceName[querySeqIndex], ref.SequenceName[refSeqIndex], ref.suffixArray[refSeqIndex][mid] + 1)); // 0->1 Index
+            // remove the match from suffixArray
+            ref.suffixArray[refSeqIndex].erase(ref.suffixArray[refSeqIndex].begin() + mid);
+
+            // Print and time output 
+            //std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+            //auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+            //std::cout << "Match time (us): " << durationFPextraction << std::endl;
+
+
         }
-
+        
         // recalculate midpoint
-        mid = GetMidpoint(left, right);
-    }
+        mid = left + (right - left) / 2;
 
+        // Print and time output 
+        //std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+        //auto durationFPextraction2 = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
+        //std::cout << "Loop time (us): " << durationFPextraction2 << std::endl;
+    }
+    
+
+    // Print and time output 
+    //std::chrono::high_resolution_clock::time_point t6 = std::chrono::high_resolution_clock::now();
+    //auto durationFPextraction3 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
+    //std::cout << "End Align (us): " << durationFPextraction3 << std::endl;
     return matches;
 }
 
@@ -416,17 +417,26 @@ void CalculateBWTRank(BWTArray &bwt) {
     for (int i = 0; i < bwt.last.length(); i++) {
         // find matching char, update counts and rank
         int pos = 0;
+        //counts[pos] = -1; // fix the $?
         for (std::set<char>::iterator j = uniqueChars.begin(); j != uniqueChars.end(); j++) {
-            if (bwt.last[i] == *j) {
+            if (strncmp( bwt.last.substr(i, 1).c_str(), &*j, 1) == 0) {
                 counts[pos]++;
                 bwt.rank[i] = rankIndex[pos] + counts[pos];
                 break;
             }
-            pos++;
+            pos++; // acts as j index
         }
         //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl; // Debug
         //std::cout << "$: " << rankIndex[0] << " A: " << rankIndex[1] << " C: " << rankIndex[2] << " G: " << rankIndex[3] << " T: " << rankIndex[4] << std::endl; // Debug
     }
+
+    // Ensure ranks are unique:
+    std::set<int> uniqueRanks;
+    for (int i = 0; i < bwt.last.length(); i++) {
+        uniqueRanks.insert(bwt.rank[i]);
+    }
+    std::cout << "Rank Size: " << uniqueRanks.size() << " Last Length: " << bwt.last.length() << std::endl;
+
 }
 
 std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
@@ -441,15 +451,55 @@ std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray
     int r = 0;
 
     std::cout << "Recovering Sequence from BWT..." << std::endl;
-    while (bwt.last[r] != '$') {
-        //std::cout << "r: " << r << " c: " << bwt.last[r] << std::endl; // Debug
-        output.insert(0,1,bwt.last[r]);
+    
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    while (bwt.last.substr(bwt.rank[r],1).c_str() != "$") {
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        std::cout << "Sequence recovery time (us): " << durationFPextraction << std::endl;
+
+        //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
+        output.append(bwt.last.substr(bwt.rank[r],1));
         r = bwt.rank[r];
     }
+
+    std::reverse(output.begin(), output.end());
 
     std::cout << "Sequence Recovered." << std::endl;
     return output += '$';
 }
+
+std::string FullSequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
+    // Calculate rank
+    std::cout << "Calculating Rank for BWT..." << std::endl;
+    CalculateBWTRank(bwt);
+    std::cout << "Rank for BWT Calculated." << std::endl;
+
+    // create output string 
+    std::string output = "";
+    output.reserve(bwt.last.length());
+    int r = 0;
+    
+    // init
+    output.append(bwt.last.substr(r,1));
+
+    std::cout << "Recovering Sequence from BWT..." << std::endl;
+
+    for (int i = 0; i < bwt.last.length(); i++) {
+        //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
+        output.append(bwt.last.substr(bwt.rank[r], 1));
+        r = bwt.rank[r];
+    }
+    // Fix missing character
+    std::reverse(output.begin(), output.end());
+    output.erase(0, 1);
+    output.append("$");
+    //std::cout << output << " " << output.length() << std::endl;
+
+    std::cout << "Sequence Recovered." << std::endl;
+    return output;
+}
+
 
 
 int main(int argc, char* argv[])
@@ -483,7 +533,7 @@ int main(int argc, char* argv[])
         std::cout << "Recovering Sequence from BWT and Suffix Array..." << std::endl;
 
         ref.Sequence.push_back({ 0 });
-        ref.Sequence[0] = SequenceFromBWTAndSuffixArray(ref, 0, bwt);
+        ref.Sequence[0] = FullSequenceFromBWTAndSuffixArray(ref, 0, bwt);
         ref.SequenceLength.push_back(0);
         ref.SequenceLength[0] = ref.Sequence[0].length();
         ref.SequenceName.push_back("");
@@ -499,35 +549,35 @@ int main(int argc, char* argv[])
         FReference query(argv[3]);
         std::cout << "Queries Loaded." << std::endl;
 
-        std::cout << query.Sequence[0] << std::endl;
-        std::cout << ref.Sequence[0] << std::endl;
-
-
         std::cout << "Aligning Queries..." << std::endl;
         std::vector<alignment> alignments;
+        alignments.resize(ref.Sequence.size());
 
         // All queries
-        for (int i = 0; i < query.Sequence.size(); i++) {
-            // 1st 1000 queries
-            //for (int i = 0; i <1000; i++) {
-                // Calc Time step per loop: start
+        //for (int i = 0; i < query.Sequence.size(); i++) {
+        for (int i = 0; i < 1000; i++) {
             std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-            //std::cout << "attempt to align";
+            
             std::vector<alignment> tmpAlignments = AlignQueryToSuffixArray(ref, query, i);
-            // std::cout << "got temp align";
+            
+            std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+            auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
+            std::cout << "Alignment time: " << durationFPextraction << std::endl;
+            
+
+            std::chrono::high_resolution_clock::time_point t5 = std::chrono::high_resolution_clock::now();
             // add new matches to alignment vector
             for (int j = 0; j < tmpAlignments.size(); j++) {
                 alignments.push_back(tmpAlignments[j]);
             }
 
+            std::chrono::high_resolution_clock::time_point t6 = std::chrono::high_resolution_clock::now();
+            auto durationFPextraction2 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
+            std::cout << "Append time: " << durationFPextraction2 << std::endl;
+
             // Time step per iteration: end 
             std::cout << "Alignment #" << i + 1 << std::endl;
             std::cout << "Num Alignments Found: " << tmpAlignments.size() << std::endl;
-
-            std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-            auto durationFPextraction = std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count();
-            std::cout << "Alignment time: " << durationFPextraction << std::endl;
-
         }
         std::cout << "Queries Aligned..." << std::endl;
 
