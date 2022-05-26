@@ -266,29 +266,20 @@ void PrintAlignmentsToTerminal(const std::vector<alignment> aln)
     }
 }
 
-// Midpoint for Binary search
-int GetMidpoint(int left, int right) {
-    return(int(left + (right - left)/2) );
-}
-
-std::vector<int> AlignQueryToSuffixArray(FReference &ref, FReference &query, int querySeqIndex, int refSeqIndex = 0) {
-    //std::chrono::high_resolution_clock::time_point t5 = std::chrono::high_resolution_clock::now();
+// Recursive binary suffix array search
+std::vector<int> AlignQueryToSuffixArray(FReference &ref, FReference &query, int left, int right, int querySeqLength, int querySeqIndex, int refSeqIndex = 0) {
     // Setup
-    int queryLength = query.SequenceLength[querySeqIndex] - 1;
-    int left = 0;
-    int right = ref.SequenceLength[refSeqIndex] - 1;
     int mid = left + (right - left) / 2;
-    //std::vector<int> suffArrayCpy = ref.suffixArray[refSeqIndex];
 
     // output
     std::vector<int> matches = {};
+    matches.reserve(3);
     int tmp;
 
     // Binary search
-    while (left <= right) {        
-        //std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+    while (left <= right) {       
 
-        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), ref.Sequence[refSeqIndex].c_str() + ref.suffixArray[refSeqIndex][mid], queryLength);
+        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), ref.Sequence[refSeqIndex].c_str() + ref.suffixArray[refSeqIndex][mid], querySeqLength);
         //std::cout << "tmp: " << tmp << "  l: " << left << "  mid: " << mid << "  r: " << right<< std::endl;
 
         // Too low, move left pointer
@@ -310,41 +301,40 @@ std::vector<int> AlignQueryToSuffixArray(FReference &ref, FReference &query, int
             }
         } // O/W match
         else {
-            //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-
             // Add the entry to output
+            //std::cout << "Match Found at: " << mid << std::endl;
             matches.push_back(ref.suffixArray[refSeqIndex][mid] + 1); // 0->1 Index
-            // remove the match from suffixArray
+            
+            if (left == mid) {
+                left++;
+            }
+            if (right == mid) {
+                right--;
+            }
+            // Recursively look on left and right of mid:
+            //std::cout << "Enter Left Recurse" << std::endl;
+            std::vector<int> leftRecurs = AlignQueryToSuffixArray(ref, query, left, mid - 1, querySeqLength, querySeqIndex);
 
-            // WARNING: This removes the suffix array with a match.
-            // I need to not do this, but for now I don't think it will be a problem unless there are non-unique reads
-            ref.suffixArray[refSeqIndex].erase(ref.suffixArray[refSeqIndex].begin() + mid);
+            //std::cout << "Enter Right Recurse" << std::endl;
+            std::vector<int> rightRecurs = AlignQueryToSuffixArray(ref, query, mid + 1, right, querySeqLength, querySeqIndex);
 
-            // Print and time output 
-            //std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-            //auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-            //std::cout << "Match time (us): " << durationFPextraction << std::endl;
-
-
+            // Add left and right recursive to matches
+            for (int i = 0; i < leftRecurs.size(); i++) {
+                matches.push_back(leftRecurs[i]);
+            }
+            for (int i = 0; i < rightRecurs.size(); i++) {
+                matches.push_back(rightRecurs[i]);
+            }
+            
+            return matches;
         }
         
         // recalculate midpoint
         mid = left + (right - left) / 2;
-
-        // Print and time output 
-        //std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-        //auto durationFPextraction2 = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
-        //std::cout << "Loop time (us): " << durationFPextraction2 << std::endl;
     }
-    
 
-    // Print and time output 
-    //std::chrono::high_resolution_clock::time_point t6 = std::chrono::high_resolution_clock::now();
-    //auto durationFPextraction3 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
-    //std::cout << "End Align (us): " << durationFPextraction3 << std::endl;
     return matches;
 }
-
 
 struct BWTArray {
     std::string EOS;
@@ -368,7 +358,7 @@ struct BWTArray {
     }
 };
 
-BWTArray BWTFromSuffixArray(FReference seq, int seqIndex) {
+BWTArray BWTFromSuffixArray(FReference &seq, int seqIndex) {
     BWTArray output = BWTArray();
 
     int seqLen = seq.suffixArray[seqIndex].size();
@@ -442,7 +432,7 @@ void CalculateBWTRank(BWTArray &bwt) {
 
 }
 
-std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
+std::string SequenceFromBWTAndSuffixArray(FReference &seq, int seqIndex, BWTArray &bwt) {
     // Calculate rank
     std::cout << "Calculating Rank for BWT..." << std::endl;
     CalculateBWTRank(bwt);
@@ -472,7 +462,7 @@ std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray
     return output += '$';
 }
 
-std::string FullSequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
+std::string FullSequenceFromBWTAndSuffixArray(FReference &seq, int seqIndex, BWTArray &bwt) {
     // Calculate rank
     std::cout << "Calculating Rank for BWT..." << std::endl;
     CalculateBWTRank(bwt);
@@ -540,7 +530,7 @@ int main(int argc, char* argv[])
         ref.SequenceLength.push_back(0);
         ref.SequenceLength[0] = ref.Sequence[0].length();
         ref.SequenceName.push_back("");
-        ref.SequenceName[0] = "smalls";
+        ref.SequenceName[0] = "chr22";
 
         // Print and time output 
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -555,36 +545,29 @@ int main(int argc, char* argv[])
         std::cout << "Aligning Queries..." << std::endl;
         std::vector<alignment> alignments;
         std::vector<int> alignmentIndexes;
-        alignments.resize(ref.Sequence.size());
+        alignments.reserve(ref.Sequence.size());
         alignmentIndexes.reserve(ref.Sequence.size());
 
-
+        std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
         // All queries
-        //for (int i = 0; i < query.Sequence.size(); i++) {
-        for (int i = 0; i < 1000; i++) {
-            std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-            alignmentIndexes = AlignQueryToSuffixArray(ref, query, i);
-            
-            std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-            auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
-            std::cout << "Alignment time: " << durationFPextraction << std::endl;
-            
+        for (int i = 0; i < query.Sequence.size(); i++) {
+            // ref, query, left, right, querylength, query index, (ref index)
+            alignmentIndexes = AlignQueryToSuffixArray(ref, query, 0, ref.SequenceLength[0] - 1, query.SequenceLength[i] - 1, i);
 
-            std::chrono::high_resolution_clock::time_point t5 = std::chrono::high_resolution_clock::now();
             // add new matches to alignment vector
             for (int j = 0; j < alignmentIndexes.size(); j++) {
                 alignments.push_back(alignment(query.SequenceName[i], ref.SequenceName[0], alignmentIndexes[j]));
             }
 
-            std::chrono::high_resolution_clock::time_point t6 = std::chrono::high_resolution_clock::now();
-            auto durationFPextraction2 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
-            std::cout << "Append time: " << durationFPextraction2 << std::endl;
-
             // Time step per iteration: end 
-            std::cout << "Alignment #" << i + 1 << std::endl;
-            std::cout << "Num Alignments Found: " << alignmentIndexes.size() << std::endl;
+            //std::cout << "Alignment #" << i + 1 << std::endl;
+            //std::cout << "Num Alignments Found: " << alignmentIndexes.size() << std::endl;
         }
-        std::cout << "Queries Aligned..." << std::endl;
+        std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+        auto durationFPextraction4 = std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count();
+        std::cout << "Alignment time Chr22 - 1,000,000 queries (ms): " << durationFPextraction4 << std::endl;
+
+        std::cout << "Queries Aligned." << std::endl;
 
         // Print alignments to file
         //PrintAlignmentsToTerminal(alignments);

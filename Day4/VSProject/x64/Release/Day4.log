@@ -1,23 +1,22 @@
 ﻿  main.cpp
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(13,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   The contents of <execution> are available only with C++17 or later.
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(277,62): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(279,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(371,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(402,38): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(364,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(395,38): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(407,54): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(400,54): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(408,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(401,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(555,128): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  54 of 785 functions ( 6.9%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    9 functions had inline decision re-evaluated but remain unchanged
+  0 of 771 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Day4.vcxproj -> D:\repos\week4_austinmarckx\Day4\x64\Release\bwtalign.exe
