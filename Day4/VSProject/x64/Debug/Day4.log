@@ -1,16 +1,19 @@
 ﻿  main.cpp
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(13,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   The contents of <execution> are available only with C++17 or later.
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(274,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(275,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(277,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(368,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(392,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(393,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(394,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(395,23): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(402,52): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(276,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(277,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(279,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(370,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(401,38): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(406,54): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(407,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   Day4.vcxproj -> D:\repos\week4_austinmarckx\Day4\x64\Debug\bwtalign.exe

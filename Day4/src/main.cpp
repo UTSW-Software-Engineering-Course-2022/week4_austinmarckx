@@ -401,37 +401,31 @@ void CalculateBWTRank(BWTArray &bwt) {
         totalCounts[pos] = std::count(bwt.last.begin(), bwt.last.end(), *i);
         pos++;
     }
-
-
-    // This is bad form to hard code everything.  TODO: Fix it
-    // Count and store
-    bwt.A = std::count(bwt.last.begin(), bwt.last.end(), 'A');
-    bwt.C = std::count(bwt.last.begin(), bwt.last.end(), 'C');
-    bwt.G = std::count(bwt.last.begin(), bwt.last.end(), 'G');
-    bwt.T = std::count(bwt.last.begin(), bwt.last.end(), 'T');
-    totalCounts[0] = 1;
-    totalCounts[1] = bwt.A;
-    totalCounts[2] = bwt.C;
-    totalCounts[3] = bwt.G;
-    totalCounts[4] = bwt.T;
-
-    rankIndex[0] = bwt.last.length()-totalCounts[0];
-    rankIndex[4] = rankIndex[0] - totalCounts[4];
-    rankIndex[3] = rankIndex[4] - totalCounts[3];
-    rankIndex[2] = rankIndex[3] - totalCounts[2];
-    rankIndex[1] = rankIndex[2] - totalCounts[1];
+    
+    // Get rank index from total counts
+    rankIndex[0] = bwt.last.length() - totalCounts[0];
+    for (int i = uniqueChars.size() - 1; i > 0; i--) {
+        if (i == uniqueChars.size() - 1) {
+            rankIndex[i] = rankIndex[0] - totalCounts[i];
+        }
+        else {
+            rankIndex[i] = rankIndex[i + 1] - totalCounts[i];
+        }
+    }
 
     for (int i = 0; i < bwt.last.length(); i++) {
-        // Get current char
-        char tmpChar = bwt.last[i];
         // find matching char, update counts and rank
-        for(int j = 0; j < 5; j++)
-            if (tmpChar == matches[j]) {
-                counts[j]++;
-                bwt.rank[i] = rankIndex[j] + counts[j];
+        int pos = 0;
+        for (std::set<char>::iterator j = uniqueChars.begin(); j != uniqueChars.end(); j++) {
+            if (bwt.last[i] == *j) {
+                counts[pos]++;
+                bwt.rank[i] = rankIndex[pos] + counts[pos];
                 break;
             }
+            pos++;
+        }
         //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl; // Debug
+        //std::cout << "$: " << rankIndex[0] << " A: " << rankIndex[1] << " C: " << rankIndex[2] << " G: " << rankIndex[3] << " T: " << rankIndex[4] << std::endl; // Debug
     }
 }
 
@@ -448,8 +442,8 @@ std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray
 
     std::cout << "Recovering Sequence from BWT..." << std::endl;
     while (bwt.last[r] != '$') {
-        std::cout << "r: " << r << " c: " << bwt.last[r] << std::endl; // Debug
-        output.insert(0,1, bwt.last[r]);
+        //std::cout << "r: " << r << " c: " << bwt.last[r] << std::endl; // Debug
+        output.insert(0,1,bwt.last[r]);
         r = bwt.rank[r];
     }
 
@@ -497,8 +491,8 @@ int main(int argc, char* argv[])
 
         // Print and time output 
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-        auto durationFPextraction = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        std::cout << "Sequence recovery time: " << durationFPextraction << std::endl;
+        auto durationFPextraction = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+        std::cout << "Sequence recovery time (us): " << durationFPextraction << std::endl;
 
         // Load Queries
         std::cout << "Loading Queries..." << std::endl;
