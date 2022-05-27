@@ -1,18 +1,18 @@
 ﻿  main.cpp
 D:\repos\week4_austinmarckx\Day5\src\main.cpp(13,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   The contents of <execution> are available only with C++17 or later.
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(475,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(506,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(478,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(509,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(511,62): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(514,62): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(512,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(633,132): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(661,137): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(515,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(636,132): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(664,137): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Day5.vcxproj -> D:\repos\week4_austinmarckx\Day5\x64\Debug\fm.exe

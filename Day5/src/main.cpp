@@ -372,27 +372,30 @@ std::string PartialSequenceFromBWTAndSuffixArray(FReference& seq, int saIndex, B
     // Find the value of the suffix array at the index
     //int r = seq.suffixArray[0][saIndex];
     //int r = bwt.rank[seq.suffixArray[0][saIndex]] - 1;
-    int r;
-
-    if (saIndex == 0) {
-        r = 0;
-        output.append(bwt.last.substr(r, 1));
-    }
-    else {
-        r = bwt.rank[seq.suffixArray[0][saIndex] - 1];
-        output.append(bwt.last.substr(r, 1));
-    }
+    int r = 0;
+    output.append(bwt.last.substr(r, 1));
+    //if (saIndex == bwt.last.length()) {
+    //    r = 0;
+    //    output.append(bwt.last.substr(r, 1));
+    //}
+    //else {
+    //    r = bwt.rank[saIndex] +1;//bwt.rank[seq.suffixArray[0][saIndex] - 1];
+    //    output.append(bwt.last.substr(r, 1));
+    //}
 
     // init  
-    while (strncmp(bwt.last.substr(bwt.rank[r], 1).c_str(), "$", 1) != 0) {
-        //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
+    //while (strncmp(bwt.last.substr(bwt.rank[r], 1).c_str(), "$", 1) != 0) {
+    for (int i = 0; i < bwt.last.length(); i++) {
+    //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
         output.append(bwt.last.substr(bwt.rank[r], 1));
         r = bwt.rank[r];
+        if (strncmp(bwt.last.substr(bwt.rank[r], 1).c_str(), "$", 1) == 0) {
+            break;
+        }
     }
     // Fix missing character
     std::reverse(output.begin(), output.end());
-    //output.erase(0, 1);
-
+   // output.erase(0, 1);
     output.append("$");
     return output;
 }
@@ -411,7 +414,7 @@ std::vector<int> AlignQueryToBWT_SuffixArray(FReference& ref, FReference& query,
     // Binary search
     while (left <= right) {
         // compare query to reconstructed sequence here... ------->                                                     <--------------------
-        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), PartialSequenceFromBWTAndSuffixArray(ref, mid, bwt, querySeqLength).c_str(), querySeqLength);
+        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), PartialSequenceFromBWTAndSuffixArray(ref, mid, bwt, querySeqLength).c_str() + ref.suffixArray[refSeqIndex][mid], querySeqLength-1);
         std::cout << "tmp: " << tmp << "  l: " << left << "  mid: " << mid << "  r: " << right << std::endl;
         std::cout << "q: " << query.Sequence[querySeqIndex].c_str() << "  ref: " << PartialSequenceFromBWTAndSuffixArray(ref, mid, bwt, querySeqLength).c_str() << std::endl;
 
