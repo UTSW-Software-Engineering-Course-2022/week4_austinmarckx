@@ -1,0 +1,22 @@
+Austin Marckx
+Day 4: Code Review -- Noah Day3 main.cpp
+-----------------------------
+
+Completeness/Code Approach:
+
+Although I cloned the repository and attempted to compile the code.  I was unable as I kept getting an exception thrown.  As the precompiled executable was not included, I will have to judge based on the code alone.
+
+That said, assuming the code works it has a very succinct algorithm with both time and memory complexity of O(n). The time complexity is O(n) is because the BWT is able to be constructed from the suffix array in only one pass through the length of the sequence. The memory complexity is O(n) because the algorithm calls "resize" which sets the size of the bwt to the size of the suffix array before filling the values.
+
+If it were to be a real issue, it would be possible to make the memory requirements less if you really wanted to avoid loading whole bwt into memory at one time, but even for the HRG, that wouldn't be an issue.  
+
+Overall, good clean job.
+
+Memory
+O(n)
+
+Time
+O(n)
+
+
+Compilation error: Exception thrown at 0x00007FF666991C28 in bwt.exe: 0xC0000005: Access violation reading location 0x0000000000000000.

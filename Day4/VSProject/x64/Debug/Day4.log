@@ -1,18 +1,18 @@
 ﻿  main.cpp
 D:\repos\week4_austinmarckx\Day4\src\main.cpp(13,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   The contents of <execution> are available only with C++17 or later.
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(276,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(278,55): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(354,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(385,38): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(469,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(500,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(390,54): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(505,62): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
           with
           [
               _Ty=int
           ]
-D:\repos\week4_austinmarckx\Day4\src\main.cpp(391,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(506,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(629,132): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day4\src\main.cpp(656,137): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Day4.vcxproj -> D:\repos\week4_austinmarckx\Day4\x64\Debug\bwtalign.exe
