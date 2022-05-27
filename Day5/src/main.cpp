@@ -347,6 +347,7 @@ struct BWTArray {
     std::vector<int> totalCounts;
     std::string first;
     std::string last;
+    std::vector<int> RankCheckpointMat;
 
     BWTArray() {
         std::string EOS = "$";
@@ -357,6 +358,7 @@ struct BWTArray {
         std::string last = "";
         std::vector<int> counts;
         std::vector<int> totalCounts;
+        std::vector<int> RankCheckpointMat;
     }
 };
 
@@ -567,6 +569,89 @@ std::string FullSequenceFromBWTAndSuffixArray(FReference& seq, int seqIndex, BWT
 }
 
 
+std::vector<int> SubSampleSuffixArray(FReference& ref, int dist) {
+    // drops the suffix array values inplace
+    std::vector<int> SubSampledSuffixArrayIndex;
+    SubSampledSuffixArrayIndex.reserve(ref.suffixArray.size() % dist);
+
+    // Determine saved ranks
+    for (int i = 0; i < ref.suffixArray[0].size(); i++) {
+        // Keep value
+        if (ref.suffixArray[0][i] % dist == 0) {
+            SubSampledSuffixArrayIndex.push_back(0);
+        }
+        else {
+            SubSampledSuffixArrayIndex.push_back(1);
+        }
+        //std::cout << "sa: " << ref.suffixArray[0][i] << " sa_index: " << SubSampledSuffixArrayIndex[i] << std::endl;
+    }
+
+    // Delete unsaved ranks
+    ref.suffixArray[0].erase(std::remove_if(ref.suffixArray[0].begin(), ref.suffixArray[0].end(),
+                [ &SubSampledSuffixArrayIndex, &ref](int const& i) { return SubSampledSuffixArrayIndex.at(&i - ref.suffixArray[0].data()); }), ref.suffixArray[0].end());
+
+    return SubSampledSuffixArrayIndex;
+}
+
+void SubSampleRank(BWTArray& bwt, int dist) {
+    // Calculate rank
+    bwt.rank.resize(bwt.last.length());
+
+    // Determine number of unique characters
+    for (int i = 0; i < bwt.last.length(); i++) {
+        bwt.uniqueChars.insert(bwt.last[i]);
+    }
+
+    // Initialize counters
+
+    // counts / Rank checkpoint saves the unique char counts, and the index
+    bwt.RankCheckpointMat.resize(bwt.last.length()%dist + 1, bwt.uniqueChars.size()+1);
+    bwt.counts.resize(bwt.uniqueChars.size() + 1);
+    bwt.totalCounts.resize(bwt.uniqueChars.size());
+    bwt.rankIndex.resize(bwt.uniqueChars.size());
+
+    // Get total counts for each unique char
+    int pos = 0;
+    for (std::set<char>::iterator i = bwt.uniqueChars.begin(); i != bwt.uniqueChars.end(); i++) {
+        bwt.totalCounts[pos] = std::count(bwt.last.begin(), bwt.last.end(), *i);
+        pos++;
+    }
+
+    // Get rank index from total counts
+    bwt.rankIndex[0] = bwt.last.length() - bwt.totalCounts[0];
+    for (int i = bwt.uniqueChars.size() - 1; i > 0; i--) {
+        if (i == bwt.uniqueChars.size() - 1) {
+            bwt.rankIndex[i] = bwt.rankIndex[0] - bwt.totalCounts[i];
+        }
+        else {
+            bwt.rankIndex[i] = bwt.rankIndex[i + 1] - bwt.totalCounts[i];
+        }
+    }
+
+
+
+    for (int i = 0; i < bwt.last.length(); i++) {
+        // find matching char, update counts and rank
+        int pos = 0;
+        for (std::set<char>::iterator j = bwt.uniqueChars.begin(); j != bwt.uniqueChars.end(); j++) {
+            if (strncmp(bwt.last.substr(i, 1).c_str(), &*j, 1) == 0) {
+                bwt.counts[pos]++;
+                bwt.counts[bwt.uniqueChars.size()] = i;
+                
+                // Currently this is just here for completeness
+                bwt.rank[i] = bwt.rankIndex[pos] + bwt.counts[pos];
+                break;
+            }
+            pos++; // acts as j index
+        }
+        if (i % dist == 0) {
+            bwt.RankCheckpointMat.push_back(bwt.counts[i]);
+        }
+    }
+}
+
+
+
 
 int main(int argc, char* argv[])
 {
@@ -585,6 +670,11 @@ int main(int argc, char* argv[])
         ref.LoadSuffixArray(argv[1]);
         std::cout << "Reference Suffix Array Loaded." << std::endl;
 
+        // Subsample suffix array
+        std::cout << "Sub-Sampling Suffix Array..." << std::endl;
+        std::vector<int> ssSA_Index = SubSampleSuffixArray(ref, 2);
+        std::cout << "Suffix Array Subsampled" << std::endl;
+
         // Load BWT
         std::cout << "Loading BWT..." << std::endl;
         BWTArray bwt;
@@ -595,10 +685,26 @@ int main(int argc, char* argv[])
         std::cout << "BWT Loaded." << std::endl;
 
         // Calculate rank
-        std::cout << "Calculating Rank for BWT..." << std::endl;
-        CalculateBWTRank(bwt);
-        std::cout << "Rank for BWT Calculated." << std::endl;
+        std::cout << "Calculating Subsampled Rank for BWT..." << std::endl;
+        //SubSampleRank(bwt, 2);
+        std::cout << "Rank for BWT Subsampled." << std::endl;
 
+        // Testing: Print results
+        std::cout << "Printing Subsampled Suffix array: " << std::endl;
+        for (int i = 0; i < ref.suffixArray[0].size(); i++) {
+            std::cout << "sa: " << ref.suffixArray[0][i] << " sa_index: " << ssSA_Index[i] << std::endl;
+        }
+
+        std::cout << "Printing Rank: " << std::endl;
+        for (int i = 0; i < bwt.RankCheckpointMat.size(); i++) {
+            for (int j = 0; j < bwt.uniqueChars.size() + 1; j++) {
+                std::cout << bwt.RankCheckpointMat[i] << std::endl;
+            }
+            
+        }
+
+
+        /*
         // Recover original sequence from BWT and suffix Array and time it
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
         std::cout << "Recovering Sequence from BWT and Suffix Array..." << std::endl;
@@ -622,7 +728,7 @@ int main(int argc, char* argv[])
 
         std::cout << "Aligning Queries..." << std::endl;
 
-
+        
         std::cout << "=========== Sequence + Suffix Array ===========" << std::endl;
         std::vector<alignment> alignments;
         std::vector<int> alignmentIndexes;
@@ -687,7 +793,7 @@ int main(int argc, char* argv[])
         SaveAlignmentsToFile("BWT_"+GetFilename(argv[4]), alignments2);
 
         std::cout << "Alignments saved." << std::endl;
-
+        */
         std::cout << "Program completed." << std::endl;
     }
 
