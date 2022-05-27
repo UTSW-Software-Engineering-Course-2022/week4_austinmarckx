@@ -1,0 +1,28 @@
+﻿  main.cpp
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(13,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  The contents of <execution> are available only with C++17 or later.
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(480,50): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(511,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(516,62): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(517,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(626,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(631,62): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(632,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5_pt1\src\main.cpp(676,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  Day5.vcxproj -> D:\repos\week4_austinmarckx\Day5_pt1\x64\Debug\fm.exe
