@@ -1,11 +1,11 @@
 ﻿  main.cpp
   The contents of <execution> are available only with C++17 or later.
-D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(273,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(274,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Projects\Day2\src\main.cpp(276,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day2\src\main.cpp(273,65): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day2\src\main.cpp(274,64): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day2\src\main.cpp(276,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  1 of 591 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  579 of 592 functions (97.8%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Day2.vcxproj -> D:\repos\week4_austinmarckx\Projects\Day2\x64\Release\salign.exe
+  Day2.vcxproj -> D:\repos\week4_austinmarckx\Day2\x64\Release\salign.exe

@@ -10,7 +10,9 @@
 #include <chrono>
 #include <ctime>
 #include <cstdlib>
-#include <execution>
+#include <execution>]
+#include <set>
+#include <iterator>
 
  // TODO: support multiple chromosome
 class FReference
@@ -107,7 +109,7 @@ public:
         return SequenceLength[seqIndex];
     }
     // Set suffix array
-    void SetSuffixArray(std::vector<int> inputSuffArray, int seqIndex) {
+    void SetSuffixArray(std::vector<int> &inputSuffArray, int seqIndex) {
 
         suffixArray[seqIndex] = inputSuffArray;
         std::cout << "Suffix Array Set" << std::endl;
@@ -177,7 +179,7 @@ bool suffixComparision(const suffix& Apples, const suffix& Oranges) {
 /* Create Suffix Array from Sequence
 
 */
-std::vector<int> SuffixArrayFromSequence(FReference refSeq, int refSeqIndex = 0)
+std::vector<int> SuffixArrayFromSequence(FReference &refSeq, int refSeqIndex = 0)
 {
     // Get length
     int strLen = (int)refSeq.Sequence[refSeqIndex].size();
@@ -264,76 +266,72 @@ void PrintAlignmentsToTerminal(const std::vector<alignment> aln)
     }
 }
 
-// Midpoint for Binary search
-int GetMidpoint(int left, int right) {
-    return(int((left + right) / 2));
-}
-
-std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query, int querySeqIndex, int refSeqIndex = 0) {
+// Recursive binary suffix array search
+std::vector<int> AlignQueryToSeq_SuffixArray(FReference &ref, FReference &query, int left, int right, int querySeqLength, int querySeqIndex, int refSeqIndex = 0) {
     // Setup
-    int queryLength = query.GetSequenceLength(querySeqIndex) - 1;
-    int refSeqLength = query.GetSequenceLength(refSeqIndex) - 1;
-    int left = 0;
-    int right = ref.GetSequenceLength(refSeqIndex);
-    int mid = GetMidpoint(left, right);
-    std::vector<int> suffArrayCpy = ref.suffixArray[refSeqIndex];
-    std::string querySeqCpy = query.Sequence[querySeqIndex].substr(0, queryLength);
-
-    std::cout << "querySeqCpy: " << querySeqCpy << std::endl;
+    int mid = left + (right - left) / 2;
 
     // output
-    std::vector<alignment> matches = {};
-    std::string tmp;
+    std::vector<int> matches = {};
+    matches.reserve(3);
+    int tmp;
 
-    // Try and use seed of query to increase comparison speed
-    int seedSize = 1;
-    std::string querySeqSubStr = querySeqCpy.substr(0, seedSize);
-    
     // Binary search
-    while (left != right) {
-        // get string at midpoint of suffix array
-        tmp = ref.Sequence[refSeqIndex].substr(suffArrayCpy[mid], seedSize);
-        std::cout << "tmp: " << tmp << "  mid: " << mid << "  r: " << right << "  l: " << left << std::endl;
+    while (left <= right) {       
+
+        // compare query to reconstructed sequence here... ------->                                                                          <--------------------
+        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), ref.Sequence[refSeqIndex].c_str() + ref.suffixArray[refSeqIndex][mid], querySeqLength);
+        //std::cout << "tmp: " << tmp << "  l: " << left << "  mid: " << mid << "  r: " << right<< std::endl;
 
         // Too low, move left pointer
-        if (tmp < querySeqSubStr) {
+        if (tmp > 0) {
             if (left == mid) {
                 left++;
             }
             else {
-                left = mid;
+                left = mid + 1;
             }
 
         }// Too high, move right pointer 
-        else if (tmp > querySeqSubStr) {
+        else if (tmp < 0) {
             if (right == mid) {
                 right--;
             }
             else {
-                right = mid;
+                right = mid - 1;
             }
         } // O/W match
         else {
-            // increase seed Size
-            if (seedSize != queryLength) {
-                seedSize *= 2;
-                // If seed size too big, set to query length
-                if (seedSize > queryLength) {
-                    seedSize = queryLength;
-                }
-                // update query substring
-                querySeqSubStr = querySeqCpy.substr(0, seedSize);
+            // Add the entry to output
+            //std::cout << "Match Found at: " << mid << std::endl;
+            matches.push_back(ref.suffixArray[refSeqIndex][mid] + 1); // 0->1 Index
+            
+            if (left == mid) {
+                left++;
             }
-            else { // if match on max seed size: add match
-                // Add the entry to output
-                matches.push_back(alignment(query.SequenceName[querySeqIndex], ref.SequenceName[refSeqIndex], suffArrayCpy[mid] + 1)); // 0->1 Index
-                // remove the match from suffixArray
-                suffArrayCpy.erase(suffArrayCpy.begin() + mid);
+            if (right == mid) {
+                right--;
             }
-        }
+            // Recursively look on left and right of mid:
+            //std::cout << "Enter Left Recurse" << std::endl;
+            std::vector<int> leftRecurs = AlignQueryToSeq_SuffixArray(ref, query, left, mid - 1, querySeqLength, querySeqIndex);
 
+            //std::cout << "Enter Right Recurse" << std::endl;
+            std::vector<int> rightRecurs = AlignQueryToSeq_SuffixArray(ref, query, mid + 1, right, querySeqLength, querySeqIndex);
+
+            // Add left and right recursive to matches
+            for (int i = 0; i < leftRecurs.size(); i++) {
+                matches.push_back(leftRecurs[i]);
+            }
+            for (int i = 0; i < rightRecurs.size(); i++) {
+                matches.push_back(rightRecurs[i]);
+            }
+            
+            return matches;
+        }
+        
         // recalculate midpoint
-        mid = GetMidpoint(left, right);
+        mid = left + (right - left) / 2;
     }
 
     return matches;
@@ -342,27 +340,127 @@ std::vector<alignment> AlignQueryToSuffixArray(FReference ref, FReference query,
 
 struct BWTArray {
     std::string EOS;
-    int A;
-    int C;
-    int G;
-    int T;
     std::vector<int> rank;
+    std::set<char> uniqueChars;
+    std::vector<int> rankIndex;
+    std::vector<int> counts;
+    std::vector<int> totalCounts;
     std::string first;
     std::string last;
 
     BWTArray() {
         std::string EOS = "$";
-        int A = 0;
-        int C = 0;
-        int G = 0;
-        int T = 0;
+        std::set<char> uniqueChars;
         std::vector<int> rank; //character, counts 
+        std::vector<int> rankIndex;
         std::string first = "";
         std::string last = "";
+        std::vector<int> counts;
+        std::vector<int> totalCounts;
     }
 };
 
-BWTArray BWTFromSuffixArray(FReference seq, int seqIndex) {
+
+std::string PartialSequenceFromBWTAndSuffixArray(FReference& seq, int saIndex, BWTArray& bwt, int lenOfRecon) {
+    // create output string 
+    std::string output = "";
+    output.reserve(bwt.last.length());
+
+    // All I have to do is start at the right point and I think that's it...
+    // saIndex == mid  == the "middle" index of the Suffix Array
+    int r = bwt.rank[saIndex];
+
+    // init
+    output.append(bwt.last.substr(r, 1));
+
+    for (int i = 0; i < lenOfRecon; i++) {
+        //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
+        output.append(bwt.last.substr(bwt.rank[r], 1));
+        r = bwt.rank[r];
+        if (strncmp(bwt.last.substr(bwt.rank[r], 1).c_str(), "$", 1) == 0) {
+            break;
+        }
+    }
+    // Fix missing character
+    std::reverse(output.begin(), output.end());
+    output.erase(0, 1);
+    output.append("$");
+    return output;
+}
+
+
+// Recursive binary suffix array search
+std::vector<int> AlignQueryToBWT_SuffixArray(FReference& ref, FReference& query, BWTArray &bwt, int left, int right, int querySeqLength, int querySeqIndex, int refSeqIndex = 0) {
+    // Setup
+    int mid = left + (right - left) / 2;
+
+    // output
+    std::vector<int> matches = {};
+    matches.reserve(3);
+    int tmp;
+
+    // Binary search
+    while (left <= right) {
+        // compare query to reconstructed sequence here... ------->                                                     <--------------------
+        tmp = strncmp(query.Sequence[querySeqIndex].c_str(), PartialSequenceFromBWTAndSuffixArray(ref, mid, bwt, querySeqLength).c_str(), querySeqLength);
+        std::cout << "tmp: " << tmp << "  l: " << left << "  mid: " << mid << "  r: " << right<< std::endl;
+        std::cout << "q: " << query.Sequence[querySeqIndex].c_str() << "  ref: " << PartialSequenceFromBWTAndSuffixArray(ref, mid, bwt, querySeqLength).c_str() << std::endl;
+
+        // Too low, move left pointer
+        if (tmp > 0) {
+            if (left == mid) {
+                left++;
+            }
+            else {
+                left = mid + 1;
+            }
+
+        }// Too high, move right pointer 
+        else if (tmp < 0) {
+            if (right == mid) {
+                right--;
+            }
+            else {
+                right = mid - 1;
+            }
+        } // O/W match
+        else {
+            // Add the entry to output
+            //std::cout << "Match Found at: " << mid << std::endl;
+            matches.push_back(ref.suffixArray[refSeqIndex][mid] + 1); // 0->1 Index
+
+            if (left == mid) {
+                left++;
+            }
+            if (right == mid) {
+                right--;
+            }
+            // Recursively look on left and right of mid:
+            std::cout << "Enter Left Recurse" << std::endl;
+            std::vector<int> leftRecurs = AlignQueryToBWT_SuffixArray(ref, query, bwt, left, mid - 1, querySeqLength, querySeqIndex);
+
+            std::cout << "Enter Right Recurse" << std::endl;
+            std::vector<int> rightRecurs = AlignQueryToBWT_SuffixArray(ref, query,bwt, mid + 1, right, querySeqLength, querySeqIndex);
+
+            // Add left and right recursive to matches
+            for (int i = 0; i < leftRecurs.size(); i++) {
+                matches.push_back(leftRecurs[i]);
+            }
+            for (int i = 0; i < rightRecurs.size(); i++) {
+                matches.push_back(rightRecurs[i]);
+            }
+
+            return matches;
+        }
+
+        // recalculate midpoint
+        mid = left + (right - left) / 2;
+    }
+
+    return matches;
+}
+
+BWTArray BWTFromSuffixArray(FReference &seq, int seqIndex) {
     BWTArray output = BWTArray();
 
     int seqLen = seq.suffixArray[seqIndex].size();
@@ -381,69 +479,81 @@ BWTArray BWTFromSuffixArray(FReference seq, int seqIndex) {
 void CalculateBWTRank(BWTArray &bwt) {
     // Calculate rank
     bwt.rank.resize(bwt.last.length());
-    char matches[5] = { '$','A','C','G','T'};
-    std::vector<int> counts(5);
-    std::vector<int> totalCounts(5);
-    std::vector<int> rankIndex(5);
 
-    // Count and store
-    bwt.A = std::count(bwt.last.begin(), bwt.last.end(), 'A');
-    bwt.C = std::count(bwt.last.begin(), bwt.last.end(), 'C');
-    bwt.G = std::count(bwt.last.begin(), bwt.last.end(), 'G');
-    bwt.T = std::count(bwt.last.begin(), bwt.last.end(), 'T');
-    totalCounts[0] = 1;
-    totalCounts[1] = bwt.A;
-    totalCounts[2] = bwt.C;
-    totalCounts[3] = bwt.G;
-    totalCounts[4] = bwt.T;
+    // Determine number of unique characters
+    //std::set<char> uniqueChars;
+    for (int i = 0; i < bwt.last.length(); i++) {
+        bwt.uniqueChars.insert(bwt.last[i]);
+    }
 
-    rankIndex[0] = bwt.last.length()-totalCounts[0];
-    rankIndex[4] = rankIndex[0] - totalCounts[4];
-    rankIndex[3] = rankIndex[4] - totalCounts[3];
-    rankIndex[2] = rankIndex[3] - totalCounts[2];
-    rankIndex[1] = rankIndex[2] - totalCounts[1];
+    // Initialize counters
+    bwt.counts.resize(bwt.uniqueChars.size());
+    bwt.totalCounts.resize(bwt.uniqueChars.size());
+    bwt.rankIndex.resize(bwt.uniqueChars.size());
+
+    // Get total counts for each unique char
+    int pos = 0;
+    for (std::set<char>::iterator i = bwt.uniqueChars.begin(); i != bwt.uniqueChars.end(); i++) {
+        bwt.totalCounts[pos] = std::count(bwt.last.begin(), bwt.last.end(), *i);
+        pos++;
+    }
+
+    // Get rank index from total counts
+    bwt.rankIndex[0] = bwt.last.length() - bwt.totalCounts[0];
+    for (int i = bwt.uniqueChars.size() - 1; i > 0; i--) {
+        if (i == bwt.uniqueChars.size() - 1) {
+            bwt.rankIndex[i] = bwt.rankIndex[0] - bwt.totalCounts[i];
+        }
+        else {
+            bwt.rankIndex[i] = bwt.rankIndex[i + 1] - bwt.totalCounts[i];
+        }
+    }
 
     for (int i = 0; i < bwt.last.length(); i++) {
-        // Get current char
-        char tmpChar = bwt.last[i];
         // find matching char, update counts and rank
-        for(int j = 0; j < 5; j++)
-            if (tmpChar == matches[j]) {
-                counts[j]++;
-                bwt.rank[i] = rankIndex[j] + counts[j];
+        int pos = 0;
+        for (std::set<char>::iterator j = bwt.uniqueChars.begin(); j != bwt.uniqueChars.end(); j++) {
+            if (strncmp( bwt.last.substr(i, 1).c_str(), &*j, 1) == 0) {
+                bwt.counts[pos]++;
+                bwt.rank[i] = bwt.rankIndex[pos] + bwt.counts[pos];
                 break;
             }
-        //std::cout << "$: " << counts[0] << " A: " << counts[1] << " C: " << counts[2] << " G: " << counts[3] << " T: " << counts[4] << std::endl;
+            pos++; // acts as j index
+        }
     }
 }
 
-std::string SequenceFromBWTAndSuffixArray(FReference seq, int seqIndex, BWTArray bwt) {
+std::string FullSequenceFromBWTAndSuffixArray(FReference &seq, int seqIndex, BWTArray &bwt) {
     // Calculate rank
-
     std::cout << "Calculating Rank for BWT..." << std::endl;
-    CalculateBWTRank(bwt);
+    //CalculateBWTRank(bwt);
     std::cout << "Rank for BWT Calculated." << std::endl;
-    
+
     // create output string 
     std::string output = "";
+    output.reserve(bwt.last.length());
     int r = 0;
-    char c = bwt.last[r];
-
-    while (c != '$') {
-        //std::cout << "r: " << r << " c: " << c << std::endl;
-        output += c;
-        //std::cout << "rank " << bwt.rank[r] << " next c: " << bwt.last[r] << std::endl;
-        //std::cout << "rank " << bwt.rank[58] << " next c: " << bwt.last[58] << std::endl;
-
-        r = bwt.rank[r];
-        c = bwt.last[r];
-    }
-    //std::cout << "Output generated... " << output << " " << output.length() << std::endl;
     
-    // For some reason this generates the reverse of the input sequence... unreverse it.
+    // init
+    output.append(bwt.last.substr(r,1));
+
+    std::cout << "Recovering Sequence from BWT..." << std::endl;
+
+    for (int i = 0; i < bwt.last.length(); i++) {
+        //std::cout << "r: " << r << " c: " << bwt.last.substr(bwt.rank[r], 1).c_str() << std::endl; // Debug
+        output.append(bwt.last.substr(bwt.rank[r], 1));
+        r = bwt.rank[r];
+    }
+    // Fix missing character
     std::reverse(output.begin(), output.end());
-    return output += '$';
+    output.erase(0, 1);
+    output.append("$");
+    //std::cout << output << " " << output.length() << std::endl;
+
+    std::cout << "Sequence Recovered." << std::endl;
+    return output;
 }
+
 
 
 int main(int argc, char* argv[])
@@ -472,58 +582,89 @@ int main(int argc, char* argv[])
         read.close();
         std::cout << "BWT Loaded." << std::endl;
 
+        // Calculate rank
+        std::cout << "Calculating Rank for BWT..." << std::endl;
+        CalculateBWTRank(bwt);
+        std::cout << "Rank for BWT Calculated." << std::endl;
+
         // Recover original sequence from BWT and suffix Array and time it
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
         std::cout << "Recovering Sequence from BWT and Suffix Array..." << std::endl;
 
         ref.Sequence.push_back({ 0 });
-        ref.Sequence[0] = SequenceFromBWTAndSuffixArray(ref, 0, bwt);
+        ref.Sequence[0] = FullSequenceFromBWTAndSuffixArray(ref, 0, bwt);
         ref.SequenceLength.push_back(0);
         ref.SequenceLength[0] = ref.Sequence[0].length();
         ref.SequenceName.push_back("");
-        ref.SequenceName[0] = "smalls";
+        ref.SequenceName[0] = "chr22";
 
         // Print and time output 
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         auto durationFPextraction = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        std::cout << "Sequence recovery time: " << durationFPextraction << std::endl;
+        std::cout << "Sequence recovery time (ms): " << durationFPextraction << std::endl;
 
         // Load Queries
         std::cout << "Loading Queries..." << std::endl;
         FReference query(argv[3]);
         std::cout << "Queries Loaded." << std::endl;
 
-        std::cout << query.Sequence[0] << std::endl;
-        std::cout << ref.Sequence[0] << std::endl;
-
-
         std::cout << "Aligning Queries..." << std::endl;
+        
+        
+        std::cout << "=========== Sequence + Suffix Array ===========" << std::endl;
         std::vector<alignment> alignments;
+        std::vector<int> alignmentIndexes;
+        alignments.reserve(ref.Sequence.size());
+        alignmentIndexes.reserve(ref.Sequence.size());
 
+        std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
         // All queries
         for (int i = 0; i < query.Sequence.size(); i++) {
-            // 1st 1000 queries
-            //for (int i = 0; i <1000; i++) {
-                // Calc Time step per loop: start
-            std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-            //std::cout << "attempt to align";
-            std::vector<alignment> tmpAlignments = AlignQueryToSuffixArray(ref, query, i);
-            // std::cout << "got temp align";
+            // ref, query, left, right, querylength, query index, (ref index)
+            alignmentIndexes = AlignQueryToSeq_SuffixArray(ref, query, 0, ref.SequenceLength[0] - 1, query.SequenceLength[i] - 1, i);
+
             // add new matches to alignment vector
-            for (int j = 0; j < tmpAlignments.size(); j++) {
-                alignments.push_back(tmpAlignments[j]);
+            for (int j = 0; j < alignmentIndexes.size(); j++) {
+                alignments.push_back(alignment(query.SequenceName[i], ref.SequenceName[0], alignmentIndexes[j]));
             }
 
             // Time step per iteration: end 
-            std::cout << "Alignment #" << i + 1 << std::endl;
-            std::cout << "Num Alignments Found: " << tmpAlignments.size() << std::endl;
-
-            std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
-            auto durationFPextraction = std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count();
-            std::cout << "Alignment time: " << durationFPextraction << std::endl;
-
+            //std::cout << "Alignment #" << i + 1 << std::endl;
+            //std::cout << "Num Alignments Found: " << alignmentIndexes.size() << std::endl;
         }
-        std::cout << "Queries Aligned..." << std::endl;
+        std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
+        auto durationFPextraction4 = std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count();
+        std::cout << "Sequence + Suffix Array Alignment time Chr22 - 1,000,000 queries (ms): " << durationFPextraction4 << std::endl;
+
+        std::cout << "Queries Aligned." << std::endl;
+
+        std::cout << "=========== BWT + Suffix Array ===========" << std::endl;
+        std::cout << "Currently bugged, skipping..." << std::endl;
+        //std::vector<alignment> alignments2;
+        //std::vector<int> alignmentIndexes2;
+        //alignments2.reserve(ref.Sequence.size());
+        //alignmentIndexes2.reserve(ref.Sequence.size());
+
+        //std::chrono::high_resolution_clock::time_point t7 = std::chrono::high_resolution_clock::now();
+        //// All queries
+        //for (int i = 0; i < query.Sequence.size(); i++) {
+        //    // ref, query, left, right, querylength, query index, (ref index)
+        //    alignmentIndexes2 = AlignQueryToBWT_SuffixArray(ref, query,bwt, 0, ref.SequenceLength[0] - 1, query.SequenceLength[i] - 1, i);
+
+        //    // add new matches to alignment vector
+        //    for (int j = 0; j < alignmentIndexes2.size(); j++) {
+        //        alignments2.push_back(alignment(query.SequenceName[i], ref.SequenceName[0], alignmentIndexes2[j]));
+        //    }
+
+        //    // Time step per iteration: end 
+        //    std::cout << "Alignment #" << i + 1 << std::endl;
+        //    std::cout << "Num Alignments Found: " << alignmentIndexes2.size() << std::endl;
+        //}
+        //std::chrono::high_resolution_clock::time_point t8 = std::chrono::high_resolution_clock::now();
+        //auto durationFPextraction5 = std::chrono::duration_cast<std::chrono::milliseconds>(t8 - t7).count();
+        //std::cout << "BWT + Suffix Array Alignment time Chr22 - 1,000,000 queries (ms): " << durationFPextraction5 << std::endl;
+        //std::cout << "Queries Aligned (Again...)" << std::endl;
+
 
         // Print alignments to file
         //PrintAlignmentsToTerminal(alignments);
@@ -531,6 +672,8 @@ int main(int argc, char* argv[])
         // Save indexes to output file
         std::cout << "Saving alignments..." << std::endl;
         SaveAlignmentsToFile(GetFilename(argv[4]), alignments);
+        //SaveAlignmentsToFile("BWT_"+GetFilename(argv[4]), alignments2);
+
         std::cout << "Alignments saved." << std::endl;
         
         std::cout << "Program completed." << std::endl;
