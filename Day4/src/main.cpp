@@ -366,12 +366,9 @@ std::string PartialSequenceFromBWTAndSuffixArray(FReference& seq, int saIndex, B
     std::string output = "";
     output.reserve(bwt.last.length());
 
-    // All I have to do is fix this and I think I got it...
-
-    // Find first 
-
+    // All I have to do is start at the right point and I think that's it...
     // saIndex == mid  == the "middle" index of the Suffix Array
-    int r = bwt.rank[saIndex];//.last[saIndex];//find(seq.suffixArray[0].begin(), seq.suffixArray[0].end(), saIndex) - seq.suffixArray[0].begin() ;
+    int r = bwt.rank[saIndex];
 
     // init
     output.append(bwt.last.substr(r, 1));
@@ -585,8 +582,6 @@ int main(int argc, char* argv[])
         read.close();
         std::cout << "BWT Loaded." << std::endl;
 
-        std::cout << bwt.last << std::endl;
-
         // Calculate rank
         std::cout << "Calculating Rank for BWT..." << std::endl;
         CalculateBWTRank(bwt);
@@ -644,31 +639,31 @@ int main(int argc, char* argv[])
         std::cout << "Queries Aligned." << std::endl;
 
         std::cout << "=========== BWT + Suffix Array ===========" << std::endl;
-        std::vector<alignment> alignments2;
-        std::vector<int> alignmentIndexes2;
-        alignments2.reserve(ref.Sequence.size());
-        alignmentIndexes2.reserve(ref.Sequence.size());
+        std::cout << "Currently bugged, skipping..." << std::endl;
+        //std::vector<alignment> alignments2;
+        //std::vector<int> alignmentIndexes2;
+        //alignments2.reserve(ref.Sequence.size());
+        //alignmentIndexes2.reserve(ref.Sequence.size());
 
-        std::chrono::high_resolution_clock::time_point t7 = std::chrono::high_resolution_clock::now();
-        // All queries
-        for (int i = 0; i < query.Sequence.size(); i++) {
-            // ref, query, left, right, querylength, query index, (ref index)
-            alignmentIndexes2 = AlignQueryToBWT_SuffixArray(ref, query,bwt, 0, ref.SequenceLength[0] - 1, query.SequenceLength[i] - 1, i);
+        //std::chrono::high_resolution_clock::time_point t7 = std::chrono::high_resolution_clock::now();
+        //// All queries
+        //for (int i = 0; i < query.Sequence.size(); i++) {
+        //    // ref, query, left, right, querylength, query index, (ref index)
+        //    alignmentIndexes2 = AlignQueryToBWT_SuffixArray(ref, query,bwt, 0, ref.SequenceLength[0] - 1, query.SequenceLength[i] - 1, i);
 
-            // add new matches to alignment vector
-            for (int j = 0; j < alignmentIndexes2.size(); j++) {
-                alignments2.push_back(alignment(query.SequenceName[i], ref.SequenceName[0], alignmentIndexes2[j]));
-            }
+        //    // add new matches to alignment vector
+        //    for (int j = 0; j < alignmentIndexes2.size(); j++) {
+        //        alignments2.push_back(alignment(query.SequenceName[i], ref.SequenceName[0], alignmentIndexes2[j]));
+        //    }
 
-            // Time step per iteration: end 
-            std::cout << "Alignment #" << i + 1 << std::endl;
-            std::cout << "Num Alignments Found: " << alignmentIndexes2.size() << std::endl;
-        }
-        std::chrono::high_resolution_clock::time_point t8 = std::chrono::high_resolution_clock::now();
-        auto durationFPextraction5 = std::chrono::duration_cast<std::chrono::milliseconds>(t8 - t7).count();
-        std::cout << "BWT + Suffix Array Alignment time Chr22 - 1,000,000 queries (ms): " << durationFPextraction5 << std::endl;
-
-        std::cout << "Queries Aligned (Again...)" << std::endl;
+        //    // Time step per iteration: end 
+        //    std::cout << "Alignment #" << i + 1 << std::endl;
+        //    std::cout << "Num Alignments Found: " << alignmentIndexes2.size() << std::endl;
+        //}
+        //std::chrono::high_resolution_clock::time_point t8 = std::chrono::high_resolution_clock::now();
+        //auto durationFPextraction5 = std::chrono::duration_cast<std::chrono::milliseconds>(t8 - t7).count();
+        //std::cout << "BWT + Suffix Array Alignment time Chr22 - 1,000,000 queries (ms): " << durationFPextraction5 << std::endl;
+        //std::cout << "Queries Aligned (Again...)" << std::endl;
 
 
         // Print alignments to file
@@ -677,7 +672,7 @@ int main(int argc, char* argv[])
         // Save indexes to output file
         std::cout << "Saving alignments..." << std::endl;
         SaveAlignmentsToFile(GetFilename(argv[4]), alignments);
-        SaveAlignmentsToFile("BWT_"+GetFilename(argv[4]), alignments2);
+        //SaveAlignmentsToFile("BWT_"+GetFilename(argv[4]), alignments2);
 
         std::cout << "Alignments saved." << std::endl;
         
