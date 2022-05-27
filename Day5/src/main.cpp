@@ -347,7 +347,7 @@ struct BWTArray {
     std::vector<int> totalCounts;
     std::string first;
     std::string last;
-    std::vector<int> RankCheckpointMat;
+    std::vector<std::vector<int>> RankCheckpointMat;
 
     BWTArray() {
         std::string EOS = "$";
@@ -358,7 +358,7 @@ struct BWTArray {
         std::string last = "";
         std::vector<int> counts;
         std::vector<int> totalCounts;
-        std::vector<int> RankCheckpointMat;
+        std::vector<std::vector<int>> RankCheckpointMat;
     }
 };
 
@@ -605,7 +605,7 @@ void SubSampleRank(BWTArray& bwt, int dist) {
     // Initialize counters
 
     // counts / Rank checkpoint saves the unique char counts, and the index
-    bwt.RankCheckpointMat.resize(bwt.last.length()%dist + 1, bwt.uniqueChars.size()+1);
+    bwt.RankCheckpointMat.resize(bwt.last.length(), std::vector<int> (bwt.uniqueChars.size()+1) );// , bwt.uniqueChars.size() + 1);
     bwt.counts.resize(bwt.uniqueChars.size() + 1);
     bwt.totalCounts.resize(bwt.uniqueChars.size());
     bwt.rankIndex.resize(bwt.uniqueChars.size());
@@ -628,24 +628,50 @@ void SubSampleRank(BWTArray& bwt, int dist) {
         }
     }
 
-
-
+    int numCheckpoints = 0;
     for (int i = 0; i < bwt.last.length(); i++) {
         // find matching char, update counts and rank
         int pos = 0;
         for (std::set<char>::iterator j = bwt.uniqueChars.begin(); j != bwt.uniqueChars.end(); j++) {
+            //std::cout << "pos " << pos  << " start" << std::endl;
             if (strncmp(bwt.last.substr(i, 1).c_str(), &*j, 1) == 0) {
+               // std::cout << "bwt counts pos " << bwt.counts[pos] << " start" << std::endl;
                 bwt.counts[pos]++;
+               // std::cout << "bwt counts pos " << bwt.counts[pos] << " end" << std::endl;
+
+                //std::cout << "bwt unique chares pos " << bwt.counts[bwt.uniqueChars.size()] << " start" << std::endl;
                 bwt.counts[bwt.uniqueChars.size()] = i;
-                
+                //std::cout << "bwt unique chares pos " << bwt.counts[bwt.uniqueChars.size()] << " end" << std::endl;
                 // Currently this is just here for completeness
-                bwt.rank[i] = bwt.rankIndex[pos] + bwt.counts[pos];
+               // bwt.rank[i] = bwt.rankIndex[pos] + bwt.counts[pos];
                 break;
             }
+            //std::cout << "pos " << pos << " end" << std::endl;
             pos++; // acts as j index
         }
+        //std::cout << "breakfree" << std::endl;
+        
         if (i % dist == 0) {
-            bwt.RankCheckpointMat.push_back(bwt.counts[i]);
+            //std::cout << "rank mat update start" << std::endl;
+            
+            for (int j = 0; j < bwt.counts.size(); j++) {
+                bwt.RankCheckpointMat[numCheckpoints].push_back({0});
+                bwt.RankCheckpointMat[numCheckpoints][j] = bwt.counts[j];
+            }
+            numCheckpoints++;
+            //std::cout << "rank mat update end" << std::endl;
+        }
+    }
+    // Drop the extra columns
+    for (int i = bwt.RankCheckpointMat.size()-1; i > 0; i--) {
+
+        int rowsum = 0;
+        for (int j = 0; j < bwt.uniqueChars.size() + 1; j++) {
+            rowsum += bwt.RankCheckpointMat[i][j];
+        }
+        // Drop row if row sum is 0
+        if (rowsum == 0) {
+            bwt.RankCheckpointMat.erase(bwt.RankCheckpointMat.begin() + i);
         }
     }
 }
@@ -686,7 +712,7 @@ int main(int argc, char* argv[])
 
         // Calculate rank
         std::cout << "Calculating Subsampled Rank for BWT..." << std::endl;
-        //SubSampleRank(bwt, 2);
+        SubSampleRank(bwt, 2);
         std::cout << "Rank for BWT Subsampled." << std::endl;
 
         // Testing: Print results
@@ -697,10 +723,11 @@ int main(int argc, char* argv[])
 
         std::cout << "Printing Rank: " << std::endl;
         for (int i = 0; i < bwt.RankCheckpointMat.size(); i++) {
+            //std::cout << i << std::endl;
             for (int j = 0; j < bwt.uniqueChars.size() + 1; j++) {
-                std::cout << bwt.RankCheckpointMat[i] << std::endl;
+                std::cout << bwt.RankCheckpointMat[i][j] << " ";
             }
-            
+            std::cout << std::endl;
         }
 
 

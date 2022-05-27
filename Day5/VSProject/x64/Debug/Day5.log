@@ -13,11 +13,6 @@ D:\repos\week4_austinmarckx\Day5\src\main.cpp(516,62): warning C4267: '=': conve
               _Ty=int
           ]
 D:\repos\week4_austinmarckx\Day5\src\main.cpp(517,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\repos\week4_austinmarckx\Day5\src\main.cpp(608,86): warning C4267: 'argument': conversion from 'size_t' to 'const _Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
 D:\repos\week4_austinmarckx\Day5\src\main.cpp(616,42): warning C4244: '=': conversion from '__int64' to '_Ty', possible loss of data
           with
           [
@@ -29,4 +24,5 @@ D:\repos\week4_austinmarckx\Day5\src\main.cpp(621,62): warning C4267: '=': conve
               _Ty=int
           ]
 D:\repos\week4_austinmarckx\Day5\src\main.cpp(622,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\repos\week4_austinmarckx\Day5\src\main.cpp(666,5): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   Day5.vcxproj -> D:\repos\week4_austinmarckx\Day5\x64\Debug\fm.exe
