@@ -1,0 +1,21 @@
+Completeness/Code Approach:
+
+Although I cloned the repository and ran the code (see below), the alignment was not able to complete. (Note: while I realize an .fa file was not needed for this exercise, the code would not run without it).
+Aside from the completeness, the readability of the code could be improved.  There is a large amount of superfluous white space and a large lack of inline comments, both of which make interpreting the code more difficult.
+
+That said in a general sense the algorithm has the following structure:
+1) Read everything in
+2) Sort the BWT to get the "First" column 
+3) calculate the ranks from the BWT
+4) gets the "first column" attached joined with ranks
+5) Attempts to align each read with the bwt, ranks and first column.
+
+Memory
+My guess for the memory is around O(n^2 + p*q^2 + m^2) where n is the size of the reference sequence/bwt, p is the number of reads, q is the read length and m is the size of the suffix array. These terms are squared mostly because the findPosition() function passes in copies of each of its inputs instead of passing by reference. 
+
+Time
+Despite not being able to time the alignment, due to alignment inputs being passed by value, in all likelihood the bottleneck for the time will be the copying of files.  This will become particularly prevalent when dealing with large reference sequences like chr22.
+
+
+Cmd line: 
+D:\repos\week4_khai> D:\repos\week4_khai\Day4\x64\Debug\bwtalign.exe .\Example_Files\abracadabra.fa .\Example_Files\abracadabra.sa .\Example_Files\abracadabra.qfa .\Example_Files\abracadabra.bwt .\Example_Files\abracadabra.aln
